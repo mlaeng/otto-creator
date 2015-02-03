@@ -24,7 +24,7 @@
 
 CROSS=/opt/cross
 TARGET=arm-bcm2708-linux-gnueabi
-export PATH=/opt/rpi-tools/arm-bcm2708/arm-bcm2708-linux-gnueabi/bin:$CROSS/bin:$PATH
+export PATH=/opt/rpi-tools/arm-bcm2708/${TARGET}/bin:$CROSS/bin:$PATH
 
 # libbcm2835
 BCM2835_VERSION="1.38"
@@ -38,22 +38,24 @@ LIBJPEG_DIR="/opt/sources/libjpeg-turbo-${LIBJPEG_VERSION}"
 apt-get install -y git build-essential libncurses5-dev nasm subversion cmake # clang-3.5 llvm-3.5
 # pacman -S base-devel clang llvm ncurses nasm subversion cmake git
 
+mkdir -p $CROSS
 # get pi specific build tools
 if [ ! -d "/opt/rpi-tools" ]; then
 	git clone --depth 1 https://github.com/raspberrypi/tools /opt/rpi-tools
+  cp -rf /opt/rpi-tools/arm-bcm2708/${TARGET}/${TARGET}/sysroot $CROSS
 fi
 
 # get pi firmware and copy /opt/vc
 if [ ! -d "/opt/vc" ]; then
 	git clone --depth 1 https://github.com/raspberrypi/firmware /opt/rpi-firmware
-	mv /opt/rpi-firmware/hardfp/opt/vc /opt/vc
+	mv /opt/rpi-firmware/opt/vc /opt/vc
 	rm -rf /opt/rpi-firmware
 fi
 	
 # add pi build tools to path
-echo "export CROSS=/opt/cross" >> /home/vagrant/.bashrc
-echo "export TARGET=arm-bcm2708-linux-gnueabihf" >> /home/vagrant/.bashrc
-echo "export PATH=/opt/rpi-tools/arm-bcm2708/arm-bcm2708-linux-gnueabi/bin:$CROSS/bin:$PATH" >> /home/vagrant/.bashrc
+echo "export CROSS=${CROSS}" >> /home/vagrant/.bashrc
+echo "export TARGET=${TARGET}" >> /home/vagrant/.bashrc
+echo "export PATH=${PATH}" >> /home/vagrant/.bashrc
 
 if [ ! -d "${BCM2835_DIR}" ]; then
   wget -P /opt/sources http://www.airspayce.com/mikem/bcm2835/bcm2835-${BCM2835_VERSION}.tar.gz || exit 1
@@ -110,15 +112,27 @@ if [ ! -d "/opt/sources/libcxx" ]; then
          -DCMAKE_SYSTEM_NAME=Linux \
          -DCMAKE_BUILD_TYPE=Debug \
          -DCMAKE_CROSSCOMPILING=True \
+         -DCMAKE_INSTALL_PREFIX=/opt/cross \
          ..
    make
+   make install
    popd
    pushd /opt/sources/libcxx
    mkdir build
    cd build
-   cmake  -DLIBCXX_CXX_ABI=libcxxabi -DLIBCXX_LIBCXXABI_INCLUDE_PATHS=path/to/libcxxabi/include -DLIT_EXECUTABLE=path/to/llvm/utils/lit/lit.py -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ..
+   cmake  -DLIBCXX_CXX_ABI=libcxxabi \
+          -DLIBCXX_LIBCXXABI_INCLUDE_PATHS=/opt/sources/libcxxabi/include \
+          -DLIT_EXECUTABLE=/opt/sources/llvm/utils/lit/lit.py \
+          -DCMAKE_C_COMPILER=clang \
+          -DCMAKE_CXX_COMPILER=clang++ \
+          -DCMAKE_INSTALL_PREFIX=/opt/cross \
+          ..
+   make
+   make install
    popd
 fi
+
+sed -i "/GROUP/c\GROUP ( /opt/cor/lib/libpthread.so.0 /opt/cross/lib/libpthread_nonshared.a )" /opt/cross/lib/libpthread.so
 
 # if [ ! -d "/opt/sources/libcxx"]; then
 #   svn co http://llvm.org/svn/llvm-project/libcxx/trunk /opt/sources/libcxx
