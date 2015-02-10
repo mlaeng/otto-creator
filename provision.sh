@@ -23,8 +23,8 @@
 # THE SOFTWARE.
 
 CROSS=/opt/cross
-TARGET=arm-bcm2708-linux-gnueabi
-export PATH=/opt/rpi-tools/arm-bcm2708/${TARGET}/bin:$CROSS/bin:$PATH
+TARGET=arm-linux-gnueabi
+export PATH=/opt/gnuarm/bin:/opt/llvm35/bin:/opt/cross/bin:$PATH
 
 # libbcm2835
 BCM2835_VERSION="1.38"
@@ -35,15 +35,14 @@ LIBJPEG_VERSION="1.4.0"
 LIBJPEG_DIR="/opt/sources/libjpeg-turbo-${LIBJPEG_VERSION}"
 
 # get standard build tools
-apt-get install -y git build-essential libncurses5-dev nasm subversion cmake # clang-3.5 llvm-3.5
-# pacman -S base-devel clang llvm ncurses nasm subversion cmake git
+apt-get install -y git build-essential libncurses5-dev nasm subversion cmake lib{mpfr,gmp,mpc}-dev
 
-mkdir -p $CROSS
-# get pi specific build tools
-if [ ! -d "/opt/rpi-tools" ]; then
-	git clone --depth 1 https://github.com/raspberrypi/tools /opt/rpi-tools
-  cp -rf /opt/rpi-tools/arm-bcm2708/${TARGET}/${TARGET}/sysroot $CROSS
-fi
+#     mkdir -p $CROSS
+#     # get pi specific build tools
+#     if [ ! -d "/opt/rpi-tools" ]; then
+#     	git clone --depth 1 https://github.com/raspberrypi/tools /opt/rpi-tools
+#     	cp -rf /opt/rpi-tools/arm-bcm2708/${TARGET}/${TARGET}/sysroot/{etc,lib,sbin,usr} $CROSS
+#     fi
 
 # get pi firmware and copy /opt/vc
 if [ ! -d "/opt/vc" ]; then
@@ -73,66 +72,66 @@ if [ ! -d "${LIBJPEG_DIR}" ]; then
   tar -xzvf /opt/sources/libjpeg-turbo-${LIBJPEG_VERSION}.tar.gz -C /opt/sources || exit 1
   rm /opt/sources/libjpeg-turbo-${LIBJPEG_VERSION}.tar.gz || exit 1
   pushd ${LIBJPEG_DIR}/
-  ./configure --host=${TARGET} --target=$TARGET --prefix=$CROSS CC=${TARGET}-gcc || exit 1
+  ./configure --host=$TARGET --build=i686-pc-linux-gnu --target=$TARGET --prefix=$CROSS CC=${TARGET}-gcc || exit 1
   make || exit 1
   make install || exit 1
   popd
 fi
 
 
-if [ ! -d "/opt/sources/llvm-3.5.1.src" ]; then
-  svn co http://llvm.org/svn/llvm-project/llvm/trunk /opt/sources/llvm
-  wget -P /opt/sources http://llvm.org/releases/3.5.1/llvm-3.5.1.src.tar.xz
-  tar -xvf /opt/sources/llvm-3.5.1.src.tar.xz -C /opt/sources/
-  wget -P /opt/sources http://llvm.org/releases/3.5.1/cfe-3.5.1.src.tar.xz
-  mkdir /opt/sources/llvm-3.5.1.src/tools/clang
-  tar -xvf /opt/sources/cfe-3.5.1.src.tar.xz -C /opt/sources/llvm-3.5.1.src/tools/
-  mv /opt/sources/llvm-3.5.1.src/tools/cfe-3.5.1.src/* /opt/sources/llvm-3.5.1.src/tools/clang
-  
-  pushd /opt/sources/llvm-3.5.1.src
-  mkdir build
-  cd build
-  ../configure --prefix=/opt/cross --enable-optimized --enable-targets=x86,arm --disable-compiler-version-checks
-  make -j 8
-  make install
-  rm /opt/sources/llvm-3.5.1.src.tar.xz
-  rm /opt/sources/cfe-3.5.1.src.tar.xz
-fi
-
-if [ ! -d "/opt/sources/libcxx" ]; then
-   svn co http://llvm.org/svn/llvm-project/libcxx/trunk /opt/sources/libcxx
-   svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk /opt/sources/libcxxabi
-   pushd /opt/sources/libcxxabi
-   mkdir build
-   cd build
-   cmake -DLIBCXXABI_LIBCXX_PATH=/opt/sources/libcxx \
-         -DCMAKE_C_COMPILER=clang \
-         -DCMAKE_CXX_COMPILER=clang++ \
-         -DCMAKE_SYSTEM_PROCESSOR=arm \
-         -DCMAKE_SYSTEM_NAME=Linux \
-         -DCMAKE_BUILD_TYPE=Debug \
-         -DCMAKE_CROSSCOMPILING=True \
-         -DCMAKE_INSTALL_PREFIX=/opt/cross \
-         ..
-   make
-   make install
-   popd
-   pushd /opt/sources/libcxx
-   mkdir build
-   cd build
-   cmake  -DLIBCXX_CXX_ABI=libcxxabi \
-          -DLIBCXX_LIBCXXABI_INCLUDE_PATHS=/opt/sources/libcxxabi/include \
-          -DLIT_EXECUTABLE=/opt/sources/llvm/utils/lit/lit.py \
-          -DCMAKE_C_COMPILER=clang \
-          -DCMAKE_CXX_COMPILER=clang++ \
-          -DCMAKE_INSTALL_PREFIX=/opt/cross \
-          ..
-   make
-   make install
-   popd
-fi
-
-sed -i "/GROUP/c\GROUP ( /opt/cor/lib/libpthread.so.0 /opt/cross/lib/libpthread_nonshared.a )" /opt/cross/lib/libpthread.so
+#     if [ ! -d "/opt/sources/llvm-3.5.1.src" ]; then
+#       svn co http://llvm.org/svn/llvm-project/llvm/trunk /opt/sources/llvm
+#       wget -P /opt/sources http://llvm.org/releases/3.5.1/llvm-3.5.1.src.tar.xz
+#       tar -xvf /opt/sources/llvm-3.5.1.src.tar.xz -C /opt/sources/
+#       wget -P /opt/sources http://llvm.org/releases/3.5.1/cfe-3.5.1.src.tar.xz
+#       mkdir /opt/sources/llvm-3.5.1.src/tools/clang
+#       tar -xvf /opt/sources/cfe-3.5.1.src.tar.xz -C /opt/sources/llvm-3.5.1.src/tools/
+#       mv /opt/sources/llvm-3.5.1.src/tools/cfe-3.5.1.src/* /opt/sources/llvm-3.5.1.src/tools/clang
+#       
+#       pushd /opt/sources/llvm-3.5.1.src
+#       mkdir build
+#       cd build
+#       ../configure --prefix=/opt/cross --enable-optimized --enable-targets=x86,arm --disable-compiler-version-checks
+#       make -j 8
+#       make install
+#       rm /opt/sources/llvm-3.5.1.src.tar.xz
+#       rm /opt/sources/cfe-3.5.1.src.tar.xz
+#     fi
+#     
+#     if [ ! -d "/opt/sources/libcxx" ]; then
+#        svn co http://llvm.org/svn/llvm-project/libcxx/trunk /opt/sources/libcxx
+#        svn co http://llvm.org/svn/llvm-project/libcxxabi/trunk /opt/sources/libcxxabi
+#        pushd /opt/sources/libcxxabi
+#        mkdir build
+#        cd build
+#        cmake -DLIBCXXABI_LIBCXX_PATH=/opt/sources/libcxx \
+#              -DCMAKE_C_COMPILER=clang \
+#              -DCMAKE_CXX_COMPILER=clang++ \
+#              -DCMAKE_SYSTEM_PROCESSOR=arm \
+#              -DCMAKE_SYSTEM_NAME=Linux \
+#              -DCMAKE_BUILD_TYPE=Debug \
+#              -DCMAKE_CROSSCOMPILING=True \
+#              -DCMAKE_INSTALL_PREFIX=/opt/cross \
+#              ..
+#        make
+#        make install
+#        popd
+#        pushd /opt/sources/libcxx
+#        mkdir build
+#        cd build
+#        cmake  -DLIBCXX_CXX_ABI=libcxxabi \
+#               -DLIBCXX_LIBCXXABI_INCLUDE_PATHS=/opt/sources/libcxxabi/include \
+#               -DLIT_EXECUTABLE=/opt/sources/llvm/utils/lit/lit.py \
+#               -DCMAKE_C_COMPILER=clang \
+#               -DCMAKE_CXX_COMPILER=clang++ \
+#               -DCMAKE_INSTALL_PREFIX=/opt/cross \
+#               ..
+#        make
+#        make install
+#        popd
+#     fi
+#     
+#     sed -i "/GROUP/c\GROUP ( /opt/cross/lib/libpthread.so.0 /opt/cross/usr/lib/libpthread_nonshared.a )" /opt/cross/usr/lib/libpthread.so
 
 # if [ ! -d "/opt/sources/libcxx"]; then
 #   svn co http://llvm.org/svn/llvm-project/libcxx/trunk /opt/sources/libcxx
