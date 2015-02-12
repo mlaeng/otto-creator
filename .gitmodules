@@ -1,6 +1,8 @@
 [submodule "otto-sdk"]
 	path = otto-sdk
-	url = https://github.com/NextThingCo/otto-sdk.git
+	url = git@github.com:NextThingCo/otto-sdk.git
+	branch = cross-toolchain-transition
 [submodule "otto-menu"]
 	path = otto-menu
-	url = https://github.com/NextThingCo/otto-menu.git
+	url = git@github.com:NextThingCo/otto-menu.git
+	branch = gcc-cpp11

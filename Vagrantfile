@@ -5,16 +5,16 @@
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'parallels'
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ffuenf/debian-7.8.0-amd64"
   config.vm.network "public_network", bridge: 'en1'
-  config.vm.synced_folder '.', "/stak/sdk", type: 'nfs'
+  config.vm.synced_folder '.', "/stak/sdk", type: 'rsync'
   config.vm.provision "shell", path: "provision.sh"
-  
+
   # Virtualbox
   config.vm.provider "virtualbox" do |v|
+    config.vm.network :private_network, ip: "192.168.3.2"
     v.gui = false
     host = RbConfig::CONFIG['host_os']
 
