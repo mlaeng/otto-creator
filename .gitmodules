@@ -1,0 +1,6 @@
+[submodule "otto-sdk"]
+	path = otto-sdk
+	url = https://github.com/NextThingCo/otto-sdk.git
+[submodule "otto-menu"]
+	path = otto-menu
+	url = https://github.com/NextThingCo/otto-menu.git
