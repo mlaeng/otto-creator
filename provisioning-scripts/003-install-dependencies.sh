@@ -35,6 +35,8 @@ fi
 
 # get standard build tools
 log "Installing required packages for building..."
-apt-get install -y git make cmake 2>&1 > /dev/null \
+apt-get install -y git make cmake python-pip 2>&1 > /dev/null \
   || error "Error getting required packages!"
 apt-get -y autoremove 2>&1 > /dev/null
+pip install shyaml 2>&1 > /dev/null \
+  || error "Could not install SHYAML"

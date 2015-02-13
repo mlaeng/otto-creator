@@ -36,7 +36,17 @@ fi
 # libbcm2835
 BCM2835_VERSION="1.38"
 BCM2835_DIR="${SOURCES}/bcm2835-${BCM2835_VERSION}"
-BCM2835_URL="http://www.airspayce.com/mikem/bcm2835/bcm2835-${BCM2835_VERSION}.tar.gz"\
+BCM2835_URL="http://www.airspayce.com/mikem/bcm2835/bcm2835-${BCM2835_VERSION}.tar.gz"
+
+if [[ ! -z "$1" ]]; then
+  if [[ "$1" -eq "clean" ]]; then
+    if [[ -f "${BCM2835_DIR}/.build.succeeded" ]]; then
+      rm "${BCM2835_DIR}/.build.succeeded"
+    fi
+    exit 0
+  fi
+fi
+
 
 
 # build libbcm2835
@@ -51,11 +61,14 @@ if [ ! -f "${BCM2835_DIR}/.build.succeeded" ]; then
   fi
   log "Building libbcm2835..."
   ${TARGET}-gcc \
-                -shared \
-                -o ${CROSS}/lib/libbcm2835.a \
+                -o ${BCM2835_DIR}/src/bcm2835.o \
                 -I${BCM2835_DIR}/src \
-                ${BCM2835_DIR}/src/bcm2835.c > /dev/null \
-    || error "Error Building libbcm2835"
+                -c ${BCM2835_DIR}/src/bcm2835.c > /dev/null \
+    || error "Error building bcm2835.o"
+  ${TARGET}-ar \
+                -rcs ${CROSS}/lib/libbcm2835.a \
+                ${BCM2835_DIR}/src/bcm2835.o > /dev/null \
+    || error "Error linking libbcm2835"
   install ${BCM2835_DIR}/src/bcm2835.h ${CROSS}/include/ \
     || error "Could not install libbcm2835 header"
   touch "${BCM2835_DIR}/.build.succeeded"
