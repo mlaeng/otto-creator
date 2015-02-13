@@ -22,33 +22,40 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# standard include line
 DIR="${BASH_SOURCE%/*}"
-
-# if we are running 
-if [[ "${BASH_SOURCE}" == "/tmp/vagrant-shell" ]]; then
-  DIR="/stak/sdk"
-  echo ${DIR}
-fi
-
 if [[ ! -d "${DIR}" ]]; then DIR="${PWD}"; fi
-
-if [[ -d "${DIR}/provisioning-scripts" ]]; then
-  source "${DIR}/provisioning-scripts/common.sh"
+if [[ -f "${DIR}/common.sh" ]]; then
+  source "${DIR}/common.sh"
 else
-	echo "Could not load common includes at ${BASH_SOURCE}."
-	ls -al ${BASH_SOURCE%/*}
-	echo "Exiting..."
+  echo "Could not load common includes at ${BASH_SOURCE%/*}."
+  echo "Exiting..."
   exit 1
 fi
 
-log "Host: ${HOST}"
+# stak toolchain
+STAK_TOOLCHAIN_URL="http://stak-images.s3.amazonaws.com/sdk/stak-sdk.tar.bz2"
+STAK_TARBALL="${SOURCES}/stak-sdk.tar.bz2"
 
-# launch provisioning scripts
-# we find all files in ./provisioning-scripts and if they
-# have the format '###-<script name>.sh' then run them
-for file in "${DIR}/provisioning-scripts"/*; do
-  if [[ -n `echo "$(basename ${file})" | grep -E '[0-9]{3}\-.*\.sh'` ]]; then
-    echo "${cyan}Stak➜ ${magenta}------[ ${green}${file}${magenta} ]------${reset}"
-    $file
+# setup cross development toolchain
+if [ ! -d "${CROSS}" ]; then
+  # make sources directory for building
+  if [ ! -d "${SOURCES}" ]; then
+    log "Creating sources directory: ${SOURCES}"
+    mkdir -p ${SOURCES}  2>&1 > /dev/null \
+      || error "Error creating sources directory"
+    chown -R vagrant:vagrant  ${SOURCES} \
+      || error "Error setting permissions on ${SOURCES}"
   fi
-done
+
+  if [[ ! -f ${STAK_TARBALL} ]]; then
+    wget -q -P ${STAK_TARBALL%/*} ${STAK_TOOLCHAIN_URL} 2>&1 > /dev/null \
+      || error "Could not download stak toolchain!"
+  fi
+  log "Installing SDK to: ${CROSS}"
+  mkdir -p ${CROSS} || error "Error making directory ${CROSS}"
+  tar xjf ${STAK_TARBALL} -C /opt --strip-components=1 2>&1 > /dev/null \
+    || error "Error installing toolchain"
+  chown -R vagrant:vagrant  ${CROSS} \
+    || error "Error setting permissions on ${CROSS}"
+fi

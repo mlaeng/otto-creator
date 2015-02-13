@@ -22,33 +22,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+# standard include line
 DIR="${BASH_SOURCE%/*}"
-
-# if we are running 
-if [[ "${BASH_SOURCE}" == "/tmp/vagrant-shell" ]]; then
-  DIR="/stak/sdk"
-  echo ${DIR}
-fi
-
 if [[ ! -d "${DIR}" ]]; then DIR="${PWD}"; fi
-
-if [[ -d "${DIR}/provisioning-scripts" ]]; then
-  source "${DIR}/provisioning-scripts/common.sh"
+if [[ -f "${DIR}/common.sh" ]]; then
+  source "${DIR}/common.sh"
 else
-	echo "Could not load common includes at ${BASH_SOURCE}."
-	ls -al ${BASH_SOURCE%/*}
+	echo "Could not load common includes at ${BASH_SOURCE%/*}."
 	echo "Exiting..."
   exit 1
 fi
 
-log "Host: ${HOST}"
-
-# launch provisioning scripts
-# we find all files in ./provisioning-scripts and if they
-# have the format '###-<script name>.sh' then run them
-for file in "${DIR}/provisioning-scripts"/*; do
-  if [[ -n `echo "$(basename ${file})" | grep -E '[0-9]{3}\-.*\.sh'` ]]; then
-    echo "${cyan}Stak➜ ${magenta}------[ ${green}${file}${magenta} ]------${reset}"
-    $file
-  fi
-done
+# get standard build tools
+log "Installing required packages for building..."
+apt-get install -y git make cmake 2>&1 > /dev/null \
+  || error "Error getting required packages!"
+apt-get -y autoremove 2>&1 > /dev/null

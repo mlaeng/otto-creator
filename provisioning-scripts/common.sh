@@ -22,33 +22,54 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-DIR="${BASH_SOURCE%/*}"
 
-# if we are running 
-if [[ "${BASH_SOURCE}" == "/tmp/vagrant-shell" ]]; then
-  DIR="/stak/sdk"
-  echo ${DIR}
-fi
+# utility variables
+red=`tput setaf 1`
+green=`tput setaf 2`
+yellow=`tput setaf 3`
+blue=`tput setaf 4`
+magenta=`tput setaf 5`
+cyan=`tput setaf 6`
+white=`tput setaf 7`
+reset=`tput sgr0`
 
-if [[ ! -d "${DIR}" ]]; then DIR="${PWD}"; fi
-
-if [[ -d "${DIR}/provisioning-scripts" ]]; then
-  source "${DIR}/provisioning-scripts/common.sh"
-else
-	echo "Could not load common includes at ${BASH_SOURCE}."
-	ls -al ${BASH_SOURCE%/*}
-	echo "Exiting..."
-  exit 1
-fi
-
-log "Host: ${HOST}"
-
-# launch provisioning scripts
-# we find all files in ./provisioning-scripts and if they
-# have the format '###-<script name>.sh' then run them
-for file in "${DIR}/provisioning-scripts"/*; do
-  if [[ -n `echo "$(basename ${file})" | grep -E '[0-9]{3}\-.*\.sh'` ]]; then
-    echo "${cyan}Stak➜ ${magenta}------[ ${green}${file}${magenta} ]------${reset}"
-    $file
+error()
+{
+  # was an error passed to this function?
+  if [ -z "$1" ]; then
+    #if not, print a standard error
+    echo "${cyan}Stak➜ ${red}Error occurred! ${reset}"
+  else
+    # if so, we can print the message in an error
+    echo "${cyan}Stak➜ ${red}Error: $1 ${reset}"
   fi
-done
+  exit 1
+}
+
+log()
+{
+  # was a message passed to this function?
+  if [ -n "$1" ]; then
+    # if so, we can print the message
+    echo "${cyan}Stak➜ ${green}[Info ]: $1${reset}"
+  fi
+}
+
+# host detection
+HOST=`uname`
+if [[ `echo ${HOST} | grep 'Darwin'` ]]; then
+  HOST="Darwin"
+  error "Darwin not supported. Exiting..."
+elif [[ `echo ${HOST} | grep 'Linux'` ]]; then
+  HOST="Linux"
+elif [[ `echo ${HOST} | grep 'Android'` ]]; then
+  error "Android not supported. Exiting..."
+else
+  error "Unknown OS: ${HOST}. Exiting..."
+fi
+
+# toolchain configs
+CROSS="/opt/stak-sdk"
+SOURCES="/opt/stak-sources"
+TARGET="arm-stak-linux-gnueabihf"
+export PATH="${CROSS}/bin:${PATH}"
