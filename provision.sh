@@ -42,7 +42,7 @@ else
 fi
 
 log "Host: ${HOST}"
-if [[ "${HOST}" -eq "Darwin" ]]; then
+if [ "${HOST}" == "Darwin" ]; then
   # launch provisioning scripts for host
   # we find all files in ./provisioning-scripts and if they
   # have the format 'host-###-<script name>.sh' then run them
@@ -52,7 +52,7 @@ if [[ "${HOST}" -eq "Darwin" ]]; then
       $file
     fi
   done
-elif [[ "${HOST}" -eq "Linux" ]]; then
+elif [ "${HOST}" == "Linux" ]; then
   # launch provisioning scripts
   # we find all files in ./provisioning-scripts and if they
   # have the format 'guest-###-<script name>.sh' then run them
