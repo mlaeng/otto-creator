@@ -42,13 +42,27 @@ else
 fi
 
 log "Host: ${HOST}"
+if [[ "${HOST}" -eq "Darwin" ]]; then
+  # launch provisioning scripts for host
+  # we find all files in ./provisioning-scripts and if they
+  # have the format 'host-###-<script name>.sh' then run them
+  for file in "${DIR}/provisioning-scripts"/*; do
+    if [[ -n `echo "$(basename ${file})" | grep -E 'host\-[0-9]{3}\-.*\.sh'` ]]; then
+      echo "${cyan}Stak➜ ${magenta}------[ ${green}${file}${magenta} ]------${reset}"
+      $file
+    fi
+  done
+elif [[ "${HOST}" -eq "Linux" ]]; then
+  # launch provisioning scripts
+  # we find all files in ./provisioning-scripts and if they
+  # have the format 'guest-###-<script name>.sh' then run them
+  for file in "${DIR}/provisioning-scripts"/*; do
+    if [[ -n `echo "$(basename ${file})" | grep -E 'guest\-[0-9]{3}\-.*\.sh'` ]]; then
+      echo "${cyan}Stak➜ ${magenta}------[ ${green}${file}${magenta} ]------${reset}"
+      $file
+    fi
+  done
+else
+  error "Unknown OS: ${HOST}. Exiting..."
+fi
 
-# launch provisioning scripts
-# we find all files in ./provisioning-scripts and if they
-# have the format '###-<script name>.sh' then run them
-for file in "${DIR}/provisioning-scripts"/*; do
-  if [[ -n `echo "$(basename ${file})" | grep -E '[0-9]{3}\-.*\.sh'` ]]; then
-    echo "${cyan}Stak➜ ${magenta}------[ ${green}${file}${magenta} ]------${reset}"
-    $file
-  fi
-done
