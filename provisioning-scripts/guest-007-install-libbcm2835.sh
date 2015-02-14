@@ -60,16 +60,18 @@ if [ ! -f "${BCM2835_DIR}/.build.succeeded" ]; then
     rm $SOURCES/bcm2835-${BCM2835_VERSION}.tar.gz 2>&1 > /dev/null
   fi
   log "Building libbcm2835..."
-  ${TARGET}-gcc \
-                -o ${BCM2835_DIR}/src/bcm2835.o \
-                -I${BCM2835_DIR}/src \
-                -c ${BCM2835_DIR}/src/bcm2835.c > /dev/null \
-    || error "Error building bcm2835.o"
-  ${TARGET}-ar \
-                -rcs ${CROSS}/lib/libbcm2835.a \
-                ${BCM2835_DIR}/src/bcm2835.o > /dev/null \
-    || error "Error linking libbcm2835"
-  install ${BCM2835_DIR}/src/bcm2835.h ${CROSS}/include/ \
-    || error "Could not install libbcm2835 header"
+  cp ${BCM2835_DIR}/src/bcm2835.c /stak/sdk/otto-sdk/lib/bcm2835.c
+  cp ${BCM2835_DIR}/src/bcm2835.h /stak/sdk/otto-sdk/lib/bcm2835.h
+  #   ${TARGET}-gcc \
+  #                 -o ${BCM2835_DIR}/src/bcm2835.o \
+  #                 -I${BCM2835_DIR}/src \
+  #                 -c ${BCM2835_DIR}/src/bcm2835.c > /dev/null \
+  #     || error "Error building bcm2835.o"
+  #   ${TARGET}-ar \
+  #                 -rcs ${CROSS}/lib/libbcm2835.a \
+  #                 ${BCM2835_DIR}/src/bcm2835.o > /dev/null \
+  #     || error "Error linking libbcm2835"
+  #   install ${BCM2835_DIR}/src/bcm2835.h ${CROSS}/include/ \
+  #     || error "Could not install libbcm2835 header"
   touch "${BCM2835_DIR}/.build.succeeded"
 fi
