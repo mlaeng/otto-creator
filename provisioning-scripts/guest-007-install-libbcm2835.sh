@@ -60,8 +60,8 @@ if [ ! -f "${BCM2835_DIR}/.build.succeeded" ]; then
     rm $SOURCES/bcm2835-${BCM2835_VERSION}.tar.gz 2>&1 > /dev/null
   fi
   log "Building libbcm2835..."
-  cp ${BCM2835_DIR}/src/bcm2835.c /stak/sdk/otto-sdk/lib/bcm2835.c
-  cp ${BCM2835_DIR}/src/bcm2835.h /stak/sdk/otto-sdk/lib/bcm2835.h
+  cp ${BCM2835_DIR}/src/bcm2835.c /stak/sdk/otto-runner/lib/bcm2835.c
+  cp ${BCM2835_DIR}/src/bcm2835.h /stak/sdk/otto-runner/lib/bcm2835.h
   #   ${TARGET}-gcc \
   #                 -o ${BCM2835_DIR}/src/bcm2835.o \
   #                 -I${BCM2835_DIR}/src \
