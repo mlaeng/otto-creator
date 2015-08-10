@@ -39,7 +39,7 @@ if [ ! -d "otto-menu" ]; then
 fi
 
 
-if [ ! -d "otto-sdk" ]; then
-  git clone -b cross-toolchain-transition git@github.com:NextThingCo/otto-sdk.git otto-sdk \
-      || error "Could not download otto-sdk"
+if [ ! -d "otto-runner" ]; then
+  git clone -b cross-toolchain-transition git@github.com:NextThingCo/otto-runner.git otto-runner \
+      || error "Could not download otto-runner"
 fi
