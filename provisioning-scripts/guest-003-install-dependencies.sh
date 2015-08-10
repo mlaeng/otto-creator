@@ -35,7 +35,7 @@ fi
 
 # get standard build tools
 log "Installing required packages for building..."
-apt-get update 2>&1 > /dev/null
+apt-get update 2>&1 > /dev/null \
   || error "Error. Could not update sources!"
 apt-get install -y git make cmake python-pip 2>&1 > /dev/null \
   || error "Error getting required packages!"
