@@ -10,6 +10,6 @@ function fetch_repo {
   fi
 }
 
-fetch_repo otto-sdk
+fetch_repo otto-runner
 fetch_repo otto-menu
 fetch_repo otto-gif-mode
